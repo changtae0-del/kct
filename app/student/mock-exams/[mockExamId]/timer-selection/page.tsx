@@ -21,7 +21,7 @@ export default function TimerSelectionPage() {
   useEffect(() => {
     async function loadExamDetail() {
       try {
-        const response = await fetch(`/api/mock-exams/${mockExamId}`)
+        const response = await fetch(`/api/mock-exams/details/${mockExamId}`)
         if (!response.ok) throw new Error('Failed to load exam')
         const data: MockExamDetail = await response.json()
         setExam(data)

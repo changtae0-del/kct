@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { MockExamSet, MockExamQuestion, Subject, Question } from '@/types'
+import { MockExamSet, Subject, Question } from '@/types'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,16 +12,16 @@ interface MockExamDetail extends MockExamSet {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ examId: string }> }
 ) {
   try {
-    const { id } = params
+    const { examId } = await params
 
     // 모의고사 정보 조회
     const { data: examData, error: examError } = await supabase
       .from('mock_exam_sets')
       .select('id, year, session_number, title, description, total_questions, created_at')
-      .eq('id', id)
+      .eq('id', examId)
       .single()
 
     if (examError || !examData) {
@@ -56,7 +56,7 @@ export async function GET(
         )
       `
       )
-      .eq('mock_exam_set_id', id)
+      .eq('mock_exam_set_id', examId)
       .order('sort_order', { ascending: true })
 
     if (questionsError) {

@@ -8,9 +8,10 @@ const supabase = createClient(
 
 export async function POST(
   request: Request,
-  { params }: { params: { setId: string } }
+  { params }: { params: Promise<{ setId: string }> }
 ) {
   try {
+    const { setId } = await params
     const body = await request.json()
     const {
       session_id,

@@ -39,7 +39,7 @@ export default function ExamPage() {
     score?: { correct: number; total: number }
   }>({ show: false, isCorrect: false })
 
-  const timerRef = useRef<NodeJS.Timeout>()
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const timeLimitsRef = useRef<Record<string, number>>({})
 
   // 초기 로드
@@ -47,7 +47,7 @@ export default function ExamPage() {
     async function loadExamData() {
       try {
         // 모의고사 상세 정보 로드
-        const examResponse = await fetch(`/api/mock-exams/${mockExamId}`)
+        const examResponse = await fetch(`/api/mock-exams/details/${mockExamId}`)
         if (!examResponse.ok) throw new Error('Failed to load exam')
         const examData: MockExamSet & {
           subjects: (Subject & { questions: Question[] })[]

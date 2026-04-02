@@ -16,10 +16,10 @@ interface MockExamResult {
 
 export async function GET(
   request: Request,
-  { params }: { params: { setId: string; sessionId: string } }
+  { params }: { params: Promise<{ setId: string; sessionId: string }> }
 ) {
   try {
-    const { setId, sessionId } = params
+    const { setId, sessionId } = await params
 
     // 과목별 결과 조회
     const { data: subjectResults, error: resultsError } = await supabase
@@ -94,13 +94,13 @@ export async function GET(
 // 최종 결과를 바탕으로 시도 기록 생성
 export async function POST(
   request: Request,
-  { params }: { params: { setId: string; sessionId: string } }
+  { params }: { params: Promise<{ setId: string; sessionId: string }> }
 ) {
   try {
-    const { setId, sessionId } = params
+    const { setId, sessionId } = await params
 
     // 먼저 최종 결과 계산
-    const resultsResponse = await GET(request, { params: { setId, sessionId } })
+    const resultsResponse = await GET(request, { params: Promise.resolve({ setId, sessionId }) })
     const results = (await resultsResponse.json()) as MockExamResult
 
     // 시도 기록 저장

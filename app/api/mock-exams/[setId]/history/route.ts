@@ -8,10 +8,10 @@ const supabase = createClient(
 
 export async function GET(
   request: Request,
-  { params }: { params: { setId: string } }
+  { params }: { params: Promise<{ setId: string }> }
 ) {
   try {
-    const { setId } = params
+    const { setId } = await params
 
     const { data, error } = await supabase
       .from('mock_exam_attempt_history')
