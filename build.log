@@ -1,0 +1,67 @@
+
+> gumjeong-gosi-app@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+  Creating an optimized production build ...
+✓ Compiled successfully in 2.2s
+  Running TypeScript ...
+  Collecting page data using 10 workers ...
+  Generating static pages using 10 workers (0/24) ...
+  Generating static pages using 10 workers (6/24) 
+  Generating static pages using 10 workers (12/24) 
+  Generating static pages using 10 workers (18/24) 
+✓ Generating static pages using 10 workers (24/24) in 198.2ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ƒ /
+├ ○ /_not-found
+├ ○ /admin
+├ ƒ /admin/analytics
+├ ƒ /admin/dashboard
+├ ○ /admin/generate
+├ ○ /admin/questions
+├ ƒ /admin/questions/[id]
+├ ○ /admin/questions/new
+├ ○ /admin/schedule
+├ ƒ /api/admin/run-daily-generation
+├ ƒ /api/admin/trigger-vercel-deploy
+├ ƒ /api/analytics
+├ ƒ /api/answers
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/cron/daily-questions
+├ ƒ /api/generate
+├ ƒ /api/mock-exams
+├ ƒ /api/mock-exams/[setId]/[sessionId]/results
+├ ƒ /api/mock-exams/[setId]/history
+├ ƒ /api/mock-exams/[setId]/subject-results
+├ ƒ /api/mock-exams/details/[examId]
+├ ƒ /api/questions
+├ ƒ /api/questions/[id]
+├ ƒ /api/schedule
+├ ƒ /api/schedule/[date]
+├ ƒ /api/schedule/today-ready
+├ ƒ /api/sessions
+├ ƒ /api/sessions/[sessionId]
+├ ○ /login
+├ ○ /student
+├ ƒ /student/history
+├ ○ /student/mock-exams
+├ ƒ /student/mock-exams/[mockExamId]/exam/[sessionId]
+├ ƒ /student/mock-exams/[mockExamId]/results/[sessionId]
+├ ƒ /student/mock-exams/[mockExamId]/timer-selection
+├ ƒ /student/results/[sessionId]
+├ ƒ /student/study/[sessionId]
+└ ƒ /student/today
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
