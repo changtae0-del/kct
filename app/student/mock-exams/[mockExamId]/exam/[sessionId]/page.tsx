@@ -242,9 +242,9 @@ export default function ExamPage() {
   const progress = ((state.currentQuestionIndex) / currentSubject.questions.length) * 100
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-900">
+    <div className="min-h-screen flex flex-col bg-emerald-950">
       {/* Header */}
-      <div className="px-4 pt-safe-top pt-6 pb-4 bg-slate-800 border-b border-slate-700">
+      <div className="px-4 pt-safe-top pt-6 pb-4 bg-emerald-900 border-b border-emerald-800">
         <div className="flex items-center justify-between mb-3">
           <span
             className="text-sm font-bold px-3 py-1 rounded-full text-white"
@@ -267,7 +267,7 @@ export default function ExamPage() {
         </div>
 
         {/* Progress bar */}
-        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+        <div className="h-2 bg-emerald-800 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{ width: `${progress}%`, backgroundColor: currentSubject.color_hex }}
@@ -277,7 +277,7 @@ export default function ExamPage() {
 
       {/* Content */}
       <div className="flex-1 px-4 py-6 flex flex-col">
-        <div className="bg-slate-800 rounded-2xl p-6 mb-6 border border-slate-700">
+        <div className="bg-emerald-900 rounded-2xl p-6 mb-6 border border-emerald-800">
           <p className="text-white text-2xl leading-relaxed font-medium">
             {currentQuestion.question_text}
           </p>
@@ -292,7 +292,7 @@ export default function ExamPage() {
             currentQuestion.option_4,
           ].map((option, i) => {
             const answerNum = (i + 1) as CorrectAnswer
-            let btnClass = 'bg-slate-800 border-slate-700 text-white hover:bg-slate-700 active:scale-95'
+            let btnClass = 'bg-emerald-800 border-emerald-700 text-white hover:bg-emerald-700 active:scale-95'
 
             if (feedback.show) {
               if (answerNum === currentQuestion.correct_answer) {
@@ -300,10 +300,10 @@ export default function ExamPage() {
               } else if (answerNum === currentAnswer) {
                 btnClass = 'bg-red-500 border-red-400 text-white'
               } else {
-                btnClass = 'bg-slate-800 border-slate-700 text-slate-500'
+                btnClass = 'bg-emerald-800 border-emerald-700 text-emerald-300'
               }
             } else if (currentAnswer === answerNum) {
-              btnClass = 'bg-indigo-600 border-indigo-500 text-white'
+              btnClass = 'bg-emerald-600 border-emerald-500 text-white'
             }
 
             return (
@@ -329,11 +329,11 @@ export default function ExamPage() {
               {feedback.isCorrect ? '🎉 정답입니다!' : '❌ 틀렸습니다'}
             </p>
             {currentQuestion.explanation && (
-              <p className="text-slate-300 text-sm leading-relaxed">{currentQuestion.explanation}</p>
+              <p className="text-emerald-100 text-sm leading-relaxed">{currentQuestion.explanation}</p>
             )}
             <button
               onClick={handleNextQuestion}
-              className="mt-4 w-full bg-white/10 hover:bg-white/20 text-white font-semibold py-4 rounded-xl text-lg transition-all active:scale-95"
+              className="mt-4 w-full bg-emerald-700/30 hover:bg-emerald-600/30 text-white font-semibold py-4 rounded-xl text-lg transition-all active:scale-95"
             >
               {state.currentQuestionIndex + 1 >= currentSubject.questions.length
                 ? '다음 과목 →'

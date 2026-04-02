@@ -103,12 +103,12 @@ export default function TimerSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 pb-10">
+    <div className="min-h-screen bg-emerald-950 pb-10">
       {/* Header */}
-      <div className="bg-slate-800 border-b border-slate-700 px-4 py-6">
+      <div className="bg-emerald-900 border-b border-emerald-800 px-4 py-6">
         <button
           onClick={() => router.back()}
-          className="text-indigo-400 hover:text-indigo-300 mb-4 font-medium"
+          className="text-emerald-400 hover:text-emerald-300 mb-4 font-medium"
         >
           ← 돌아가기
         </button>
@@ -118,14 +118,14 @@ export default function TimerSelectionPage() {
 
       {/* Content */}
       <div className="max-w-2xl mx-auto px-4 py-6">
-        <div className="bg-slate-800 rounded-2xl p-6 space-y-6 border border-slate-700">
+        <div className="bg-emerald-900 rounded-2xl p-6 space-y-6 border border-emerald-800">
           <div>
             <h2 className="text-lg font-bold text-white mb-4">⏱️ 과목별 시간 설정</h2>
             <div className="space-y-4">
               {exam.subjects.map((subject) => (
                 <div
                   key={subject.id}
-                  className="flex items-center justify-between p-4 bg-slate-700 rounded-xl"
+                  className="flex items-center justify-between p-4 bg-emerald-800 rounded-xl"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -134,7 +134,7 @@ export default function TimerSelectionPage() {
                     />
                     <div>
                       <p className="text-white font-medium">{subject.name_ko}</p>
-                      <p className="text-slate-400 text-sm">
+                      <p className="text-emerald-300 text-sm">
                         {subject.questions.length}문제
                       </p>
                     </div>
@@ -146,7 +146,7 @@ export default function TimerSelectionPage() {
                       min="0"
                       value={Math.floor((timeLimits[subject.id] || 0) / 60)}
                       onChange={(e) => handleTimeChange(subject.id, e.target.value)}
-                      className="w-16 px-2 py-2 bg-slate-600 text-white rounded-lg text-center focus:outline-none focus:border-indigo-500"
+                      className="w-16 px-2 py-2 bg-emerald-700 text-white rounded-lg text-center focus:outline-none focus:border-emerald-400"
                     />
                     <span className="text-slate-400 font-medium">분</span>
                   </div>
@@ -155,8 +155,8 @@ export default function TimerSelectionPage() {
             </div>
           </div>
 
-          <div className="bg-indigo-900/30 border border-indigo-500/30 rounded-xl p-4">
-            <p className="text-indigo-300 text-sm">
+          <div className="bg-emerald-900/30 border border-emerald-500/30 rounded-xl p-4">
+            <p className="text-emerald-300 text-sm">
               💡 각 과목마다 정한 시간이 끝나면 자동으로 채점되고 다음 과목으로 넘어갑니다
             </p>
           </div>
@@ -164,7 +164,7 @@ export default function TimerSelectionPage() {
           <button
             onClick={handleStartExam}
             disabled={starting}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-500 text-white font-bold py-4 rounded-xl transition-all active:scale-95 text-lg"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 disabled:text-emerald-400 text-white font-bold py-4 rounded-xl transition-all active:scale-95 text-lg"
           >
             {starting ? '시험 준비 중...' : '🎯 시험 시작'}
           </button>
