@@ -49,20 +49,37 @@ export default async function TodayPage() {
   }, {})
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-start px-4 py-8 max-w-lg mx-auto">
+    <div className="min-h-screen bg-slate-900">
       {/* Header */}
-      <div className="w-full flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-white">오늘의 학습 📚</h1>
-          <p className="text-slate-400 text-sm mt-1">{todayStr}</p>
+      <div className="bg-slate-800 border-b border-slate-700 px-4 py-4 sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-4 max-w-lg mx-auto">
+          <div>
+            <h1 className="text-2xl font-bold text-white">검정고시 앱 📚</h1>
+            <p className="text-slate-400 text-sm mt-1">{todayStr}</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <Link href="/student/history" className="text-slate-400 hover:text-white text-sm">
+              기록 →
+            </Link>
+            <StudentLogout />
+          </div>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href="/student/history" className="text-slate-400 hover:text-white text-sm">
-            학습 기록 →
+
+        {/* Tabs */}
+        <div className="flex gap-4 border-b border-slate-700 max-w-lg mx-auto">
+          <span className="px-4 py-2 text-white border-b-2 border-indigo-500 font-medium">
+            📝 오늘의 문제
+          </span>
+          <Link href="/student/mock-exams">
+            <span className="px-4 py-2 text-slate-400 hover:text-white border-b-2 border-transparent hover:border-indigo-500 transition-all">
+              🎯 모의고사
+            </span>
           </Link>
-          <StudentLogout />
         </div>
       </div>
+
+      {/* Content */}
+      <div className="flex flex-col items-center justify-start px-4 py-8 max-w-lg mx-auto">
 
       {/* Completed today */}
       {completedSession && (
@@ -83,47 +100,48 @@ export default async function TodayPage() {
         </div>
       )}
 
-      {/* No questions today */}
-      {schedule.length === 0 ? (
-        <div className="w-full text-center py-16">
-          <div className="text-6xl mb-4">📭</div>
-          <p className="text-slate-300 text-lg font-medium">오늘 배정된 문제가 없어요</p>
-          <p className="text-slate-500 text-sm mt-2">아빠한테 문제 배정을 부탁해보세요!</p>
-        </div>
-      ) : (
-        <>
-          {/* Question overview by subject */}
-          <div className="w-full space-y-3 mb-8">
-            {Object.entries(bySubject).map(([subjectName, items]) => {
-              const color = items[0]?.question?.subject?.color_hex || '#6366f1'
-              return (
-                <div key={subjectName} className="bg-slate-800 rounded-xl p-4 flex items-center gap-4">
-                  <div
-                    className="w-3 h-10 rounded-full shrink-0"
-                    style={{ backgroundColor: color }}
-                  />
-                  <div>
-                    <p className="text-white font-semibold">{subjectName}</p>
-                    <p className="text-slate-400 text-sm">{items.length}문제</p>
+        {/* No questions today */}
+        {schedule.length === 0 ? (
+          <div className="w-full text-center py-16">
+            <div className="text-6xl mb-4">📭</div>
+            <p className="text-slate-300 text-lg font-medium">오늘 배정된 문제가 없어요</p>
+            <p className="text-slate-500 text-sm mt-2">아빠한테 문제 배정을 부탁해보세요!</p>
+          </div>
+        ) : (
+          <>
+            {/* Question overview by subject */}
+            <div className="w-full space-y-3 mb-8">
+              {Object.entries(bySubject).map(([subjectName, items]) => {
+                const color = items[0]?.question?.subject?.color_hex || '#6366f1'
+                return (
+                  <div key={subjectName} className="bg-slate-800 rounded-xl p-4 flex items-center gap-4">
+                    <div
+                      className="w-3 h-10 rounded-full shrink-0"
+                      style={{ backgroundColor: color }}
+                    />
+                    <div>
+                      <p className="text-white font-semibold">{subjectName}</p>
+                      <p className="text-slate-400 text-sm">{items.length}문제</p>
+                    </div>
                   </div>
-                </div>
-              )
-            })}
-          </div>
+                )
+              })}
+            </div>
 
-          <div className="w-full text-center text-slate-400 text-sm mb-6">
-            총 {schedule.length}문제
-          </div>
+            <div className="w-full text-center text-slate-400 text-sm mb-6">
+              총 {schedule.length}문제
+            </div>
 
-          {/* Start/Resume button */}
-          <StartSessionButton
-            schedule={schedule}
-            today={today}
-            incompleteSessionId={incompleteSession?.id}
-            alreadyCompleted={!!completedSession}
-          />
-        </>
-      )}
+            {/* Start/Resume button */}
+            <StartSessionButton
+              schedule={schedule}
+              today={today}
+              incompleteSessionId={incompleteSession?.id}
+              alreadyCompleted={!!completedSession}
+            />
+          </>
+        )}
+      </div>
     </div>
   )
 }

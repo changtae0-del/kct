@@ -59,6 +59,49 @@ export type StudySession = {
   score_pct: number | null
   duration_seconds: number | null
   is_completed: boolean
+  session_type: 'daily' | 'mock_exam'
+  mock_exam_set_id?: string | null
+}
+
+export type MockExamSet = {
+  id: string
+  year: number
+  session_number: number | null
+  title: string
+  description: string | null
+  total_questions: number
+  created_at: string
+}
+
+export type MockExamQuestion = {
+  id: string
+  mock_exam_set_id: string
+  question_id: string
+  question?: Question
+  sort_order: number
+  created_at: string
+}
+
+export type MockExamSubjectResult = {
+  id: string
+  session_id: string
+  subject_id: number
+  subject?: Subject
+  total_questions: number
+  correct_count: number
+  score_percentage: number | null
+  time_limit_seconds: number | null
+  time_used_seconds: number | null
+  created_at: string
+}
+
+export type MockExamAttemptHistory = {
+  id: string
+  mock_exam_set_id: string
+  session_id: string
+  total_score: number | null
+  average_percentage: number | null
+  attempt_date: string
 }
 
 export type UserAnswer = {

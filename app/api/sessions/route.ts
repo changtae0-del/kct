@@ -19,12 +19,20 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const { session_date, total_questions } = await request.json()
+  const { session_date, total_questions, mock_exam_set_id } = await request.json()
   const db = createServerSupabase()
+
+  // session_type 자동 결정
+  const session_type = mock_exam_set_id ? 'mock_exam' : 'daily'
 
   const { data, error } = await db
     .from('study_sessions')
-    .insert({ session_date, total_questions })
+    .insert({
+      session_date,
+      total_questions,
+      session_type,
+      mock_exam_set_id: mock_exam_set_id || null,
+    })
     .select()
     .single()
 

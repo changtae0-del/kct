@@ -60,6 +60,35 @@ CREATE INDEX idx_daily_schedules_date     ON daily_schedules(schedule_date);
 CREATE INDEX idx_daily_schedules_question ON daily_schedules(question_id);
 
 
+-- 3.5 모의고사 세트 (연도, 회차별 기출문제 그룹)
+CREATE TABLE mock_exam_sets (
+  id             UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  year           SMALLINT NOT NULL,
+  session_number SMALLINT,
+  title          TEXT NOT NULL,
+  description    TEXT,
+  total_questions INTEGER NOT NULL DEFAULT 0,
+  created_at     TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(year, session_number)
+);
+
+CREATE INDEX idx_mock_exam_sets_year ON mock_exam_sets(year DESC);
+
+
+-- 3.6 모의고사 세트에 포함된 문제들
+CREATE TABLE mock_exam_questions (
+  id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  mock_exam_set_id UUID NOT NULL REFERENCES mock_exam_sets(id) ON DELETE CASCADE,
+  question_id      UUID NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+  sort_order       INTEGER NOT NULL DEFAULT 0,
+  created_at       TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(mock_exam_set_id, question_id)
+);
+
+CREATE INDEX idx_mock_exam_questions_set  ON mock_exam_questions(mock_exam_set_id);
+CREATE INDEX idx_mock_exam_questions_q    ON mock_exam_questions(question_id);
+
+
 -- 4. 학습 세션
 CREATE TABLE study_sessions (
   id               UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -70,10 +99,14 @@ CREATE TABLE study_sessions (
   correct_count    INTEGER NOT NULL DEFAULT 0,
   score_pct        NUMERIC(5,2),
   duration_seconds INTEGER,
-  is_completed     BOOLEAN NOT NULL DEFAULT FALSE
+  is_completed     BOOLEAN NOT NULL DEFAULT FALSE,
+  session_type     VARCHAR(20) DEFAULT 'daily' CHECK (session_type IN ('daily', 'mock_exam')),
+  mock_exam_set_id UUID REFERENCES mock_exam_sets(id)
 );
 
 CREATE INDEX idx_sessions_date ON study_sessions(session_date);
+CREATE INDEX idx_sessions_type ON study_sessions(session_type);
+CREATE INDEX idx_sessions_mock_exam ON study_sessions(mock_exam_set_id);
 
 
 -- 5. 개별 답변 기록
@@ -93,6 +126,37 @@ CREATE INDEX idx_answers_question ON user_answers(question_id);
 CREATE INDEX idx_answers_correct  ON user_answers(is_correct);
 
 
+-- 5.5 모의고사 과목별 결과
+CREATE TABLE mock_exam_subject_results (
+  id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  session_id          UUID NOT NULL REFERENCES study_sessions(id) ON DELETE CASCADE,
+  subject_id          INTEGER NOT NULL REFERENCES subjects(id),
+  total_questions     INTEGER NOT NULL,
+  correct_count       INTEGER NOT NULL,
+  score_percentage    NUMERIC(5,2),
+  time_limit_seconds  INTEGER,
+  time_used_seconds   INTEGER,
+  created_at          TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_mock_subject_results_session ON mock_exam_subject_results(session_id);
+CREATE INDEX idx_mock_subject_results_subject ON mock_exam_subject_results(subject_id);
+
+
+-- 5.6 모의고사 시도 기록
+CREATE TABLE mock_exam_attempt_history (
+  id                  UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  mock_exam_set_id    UUID NOT NULL REFERENCES mock_exam_sets(id) ON DELETE CASCADE,
+  session_id          UUID NOT NULL REFERENCES study_sessions(id) ON DELETE CASCADE,
+  total_score         INTEGER,
+  average_percentage  NUMERIC(5,2),
+  attempt_date        TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_mock_attempt_history_set ON mock_exam_attempt_history(mock_exam_set_id, attempt_date DESC);
+CREATE INDEX idx_mock_attempt_history_session ON mock_exam_attempt_history(session_id);
+
+
 -- 자동 updated_at 트리거
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -110,18 +174,26 @@ CREATE TRIGGER update_questions_updated_at
 -- ============================================================
 -- Row Level Security
 -- ============================================================
-ALTER TABLE subjects         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE questions        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE daily_schedules  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE study_sessions   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE user_answers     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subjects                    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE questions                   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE daily_schedules             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mock_exam_sets              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mock_exam_questions         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE study_sessions              ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_answers                ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mock_exam_subject_results   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE mock_exam_attempt_history   ENABLE ROW LEVEL SECURITY;
 
 -- 읽기: anon key 허용 (앱 레벨에서 접근 제어)
 CREATE POLICY "anon_read_subjects"        ON subjects        FOR SELECT USING (true);
 CREATE POLICY "anon_read_questions"       ON questions       FOR SELECT USING (true);
 CREATE POLICY "anon_read_daily_schedules" ON daily_schedules FOR SELECT USING (true);
+CREATE POLICY "anon_read_mock_exam_sets" ON mock_exam_sets FOR SELECT USING (true);
+CREATE POLICY "anon_read_mock_exam_questions" ON mock_exam_questions FOR SELECT USING (true);
 CREATE POLICY "anon_read_sessions"        ON study_sessions  FOR SELECT USING (true);
 CREATE POLICY "anon_read_answers"         ON user_answers    FOR SELECT USING (true);
+CREATE POLICY "anon_read_mock_subject_results" ON mock_exam_subject_results FOR SELECT USING (true);
+CREATE POLICY "anon_read_mock_attempt_history" ON mock_exam_attempt_history FOR SELECT USING (true);
 
 -- 쓰기: service role key만 허용 (API 라우트에서만 사용)
 -- (service role은 RLS를 우회하므로 추가 정책 불필요)
