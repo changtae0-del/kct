@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>유튜브 다운로더</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23c4302b'/><path d='M13 10l9 6-9 6z' fill='white'/></svg>">
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --panel: #ffffff;
+    --border: #e2e5ea;
+    --text: #1c2024;
+    --muted: #6b7280;
+    --accent: #c4302b;
+    --accent-dark: #a52722;
+    --ok: #1a7f4b;
+    --err: #c02626;
+    --track: #eceef1;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181c;
+      --panel: #1f2227;
+      --border: #31353c;
+      --text: #e8eaed;
+      --muted: #9aa0a8;
+      --track: #2a2e34;
+      --ok: #4ade80;
+      --err: #f87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 16px 64px;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Malgun Gothic",
+                 "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0 0 24px; }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  label { font-size: 13px; font-weight: 600; display: block; margin-bottom: 6px; }
+  textarea, input[type=text], select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+  }
+  textarea { resize: vertical; min-height: 84px; }
+  .row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-top: 16px; }
+  .row > div { flex: 1 1 160px; }
+  .checks { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 16px; font-size: 14px; }
+  .checks label { font-weight: 400; display: flex; align-items: center; gap: 6px; margin: 0; }
+  .actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+  button {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel);
+    color: var(--text);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--muted); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { background: var(--accent-dark); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .info {
+    display: none;
+    gap: 14px;
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .info.show { display: flex; }
+  .info img { width: 132px; border-radius: 6px; flex-shrink: 0; }
+  .info .meta { font-size: 13px; color: var(--muted); }
+  .info .meta strong { color: var(--text); font-size: 15px; display: block; margin-bottom: 4px; }
+  .job { border-top: 1px solid var(--border); padding: 16px 0; }
+  .job:first-child { border-top: 0; padding-top: 0; }
+  .job-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .job-title { font-weight: 600; font-size: 14px; word-break: break-all; }
+  .job-time { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  .bar { height: 8px; background: var(--track); border-radius: 999px; overflow: hidden; margin: 10px 0 6px; }
+  .bar > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+  .job.done .bar > span { background: var(--ok); }
+  .job.error .bar > span { background: var(--err); }
+  .job-status { font-size: 13px; color: var(--muted); word-break: break-all; }
+  .job-status.error { color: var(--err); }
+  .files { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .files a {
+    font-size: 13px; text-decoration: none; color: var(--text);
+    border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px;
+  }
+  .files a:hover { border-color: var(--muted); }
+  .job-actions { margin-top: 10px; display: flex; gap: 8px; }
+  .job-actions button { padding: 5px 12px; font-size: 13px; }
+  details { margin-top: 10px; }
+  summary { font-size: 13px; color: var(--muted); cursor: pointer; }
+  pre {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px; font-size: 12px; max-height: 180px; overflow: auto; margin: 8px 0 0;
+    white-space: pre-wrap; word-break: break-all;
+  }
+  .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 12px 0; }
+  .panel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .panel-head h2 { font-size: 15px; margin: 0; }
+  .toast {
+    display: none; margin-top: 14px; padding: 10px 12px; border-radius: 8px;
+    font-size: 13px; background: rgba(192,38,38,.12); color: var(--err);
+  }
+  .toast.show { display: block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>유튜브 다운로더</h1>
+  <p class="sub">주소를 넣고 다운로드를 누르세요. 이 PC에서만 접속됩니다.</p>
+
+  <div class="panel">
+    <label for="urls">유튜브 주소 <span style="font-weight:400;color:var(--muted)">(여러 개면 줄바꿈으로 구분)</span></label>
+    <textarea id="urls" placeholder="https://www.youtube.com/watch?v=..."></textarea>
+
+    <div class="row">
+      <div>
+        <label for="mode">받을 형식</label>
+        <select id="mode">
+          <option value="video">영상 (mp4)</option>
+          <option value="audio">음원 (mp3)</option>
+        </select>
+      </div>
+      <div>
+        <label for="quality">화질</label>
+        <select id="quality">
+          <option value="">최고 화질</option>
+          <option value="1080">1080p 이하</option>
+          <option value="720">720p 이하</option>
+          <option value="480">480p 이하</option>
+          <option value="360">360p 이하</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label for="outputDir">저장 폴더 (서버 PC 기준)</label>
+        <input type="text" id="outputDir" placeholder="비워두면 ~/Downloads/youtube">
+      </div>
+    </div>
+
+    <div class="checks">
+      <label><input type="checkbox" id="subtitles"> 자막 함께 받기</label>
+      <label><input type="checkbox" id="playlist"> 재생목록 전체</label>
+      <label><input type="checkbox" id="thumbnail"> 썸네일 저장</label>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="downloadBtn">다운로드</button>
+      <button id="infoBtn">정보만 확인</button>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="info" id="info">
+      <img id="infoThumb" alt="">
+      <div class="meta" id="infoMeta"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>진행 상황</h2>
+      <button id="clearBtn">완료된 항목 지우기</button>
+    </div>
+    <div id="jobs"><p class="empty">아직 받은 항목이 없습니다.</p></div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+function showError(message) {
+  const toast = $('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 6000);
+}
+
+function readUrls() {
+  return $('urls').value.split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+async function postJSON(path, body) {
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body || {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ('요청 실패 (' + res.status + ')'));
+  return data;
+}
+
+$('downloadBtn').addEventListener('click', async () => {
+  const urls = readUrls();
+  if (!urls.length) return showError('주소를 입력해 주세요.');
+
+  $('downloadBtn').disabled = true;
+  try {
+    await postJSON('/api/jobs', {
+      urls,
+      mode: $('mode').value,
+      quality: $('quality').value,
+      subtitles: $('subtitles').checked,
+      playlist: $('playlist').checked,
+      thumbnail: $('thumbnail').checked,
+      outputDir: $('outputDir').value.trim(),
+    });
+    refresh();
+  } catch (err) {
+    showError(err.message);
+  } finally {
+    $('downloadBtn').disabled = false;
+  }
+});
+
+$('infoBtn').addEventListener('click', async () => {
+  const urls = readUrls();
+  if (!urls.length) return showError('주소를 입력해 주세요.');
+
+  $('infoBtn').disabled = true;
+  try {
+    const data = await postJSON('/api/info', { url: urls[0] });
+    const mins = Math.floor((data.duration || 0) / 60);
+    const secs = (data.duration || 0) % 60;
+    $('infoThumb').src = data.thumbnail || '';
+    $('infoThumb').style.display = data.thumbnail ? '' : 'none';
+    $('infoMeta').innerHTML =
+      '<strong></strong>' +
+      '<div>채널: <span class="ch"></span></div>' +
+      '<div>길이: ' + mins + '분 ' + secs + '초</div>' +
+      '<div>가능 화질: ' + ((data.qualities || []).join(', ') || '정보 없음') + '</div>';
+    $('infoMeta').querySelector('strong').textContent = data.title || '(제목 없음)';
+    $('infoMeta').querySelector('.ch').textContent = data.uploader || '-';
+    $('info').classList.add('show');
+  } catch (err) {
+    $('info').classList.remove('show');
+    showError(err.message);
+  } finally {
+    $('infoBtn').disabled = false;
+  }
+});
+
+$('clearBtn').addEventListener('click', async () => {
+  await postJSON('/api/jobs/clear');
+  refresh();
+});
+
+async function cancelJob(id) {
+  try { await postJSON('/api/jobs/' + id + '/cancel'); refresh(); }
+  catch (err) { showError(err.message); }
+}
+
+function humanSize(bytes) {
+  if (!bytes) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let value = bytes, unit = 0;
+  while (value >= 1024 && unit < units.length - 1) { value /= 1024; unit++; }
+  return value.toFixed(value >= 10 || unit === 0 ? 0 : 1) + units[unit];
+}
+
+function renderJobs(jobs) {
+  const box = $('jobs');
+  if (!jobs.length) {
+    box.innerHTML = '<p class="empty">아직 받은 항목이 없습니다.</p>';
+    return;
+  }
+
+  box.textContent = '';
+  for (const job of jobs) {
+    const el = document.createElement('div');
+    el.className = 'job ' + job.state;
+
+    const head = document.createElement('div');
+    head.className = 'job-head';
+    const title = document.createElement('div');
+    title.className = 'job-title';
+    title.textContent = job.title || job.url;
+    const time = document.createElement('div');
+    time.className = 'job-time';
+    time.textContent = job.createdAt;
+    head.append(title, time);
+
+    const bar = document.createElement('div');
+    bar.className = 'bar';
+    const fill = document.createElement('span');
+    fill.style.width = (job.state === 'done' ? 100 : job.percent) + '%';
+    bar.append(fill);
+
+    const status = document.createElement('div');
+    status.className = 'job-status' + (job.state === 'error' ? ' error' : '');
+    let text = job.status;
+    if (job.state === 'running' && job.speed) {
+      text += '  ·  ' + job.speed + (job.eta ? '  ·  남은 시간 ' + job.eta : '');
+    }
+    if (job.state === 'error' && job.error) text = job.error;
+    status.textContent = text;
+
+    el.append(head, bar, status);
+
+    if (job.files.length) {
+      const files = document.createElement('div');
+      files.className = 'files';
+      for (const file of job.files) {
+        const link = document.createElement('a');
+        link.href = '/api/jobs/' + job.id + '/file?name=' + encodeURIComponent(file.name);
+        link.textContent = '⬇ ' + file.name + (file.size ? '  (' + humanSize(file.size) + ')' : '');
+        files.append(link);
+      }
+      el.append(files);
+    }
+
+    if (job.state === 'running' || job.state === 'queued') {
+      const actions = document.createElement('div');
+      actions.className = 'job-actions';
+      const cancel = document.createElement('button');
+      cancel.textContent = '중지';
+      cancel.onclick = () => cancelJob(job.id);
+      actions.append(cancel);
+      el.append(actions);
+    }
+
+    if (job.log && job.log.length) {
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.textContent = '자세한 기록';
+      const pre = document.createElement('pre');
+      pre.textContent = job.log.join('\n');
+      details.append(summary, pre);
+      el.append(details);
+    }
+
+    box.append(el);
+  }
+}
+
+let polling = false;
+async function refresh() {
+  if (polling) return;
+  polling = true;
+  try {
+    const res = await fetch('/api/jobs');
+    renderJobs(await res.json());
+  } catch (err) {
+    /* 서버가 잠시 응답하지 않아도 다음 주기에 다시 시도한다 */
+  } finally {
+    polling = false;
+  }
+}
+
+refresh();
+setInterval(refresh, 800);
+</script>
+</body>
+</html>
